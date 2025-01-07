@@ -31,9 +31,10 @@ const productSchema = new mongoose.Schema({
         enum: ["men", "women", "boy", "girl", "unisex"],
         required: true,
     },
-    categories: {
-        type: [String], // Array to store categories (can be like ["electronics", "clothing"])
-        required: true,
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true
     },
 });
 

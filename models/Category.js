@@ -9,6 +9,10 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    itemCount: {
+        type: Number,
+        default: 0
+    },
 });
 
 const Category = mongoose.model("Category", categorySchema);
