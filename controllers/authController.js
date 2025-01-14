@@ -7,30 +7,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 // Register User
 exports.registerUser = async (req, res) => {
-    // try {
-    //     const { email, phone, password } = req.body;
-
-    //     // Check if user already exists
-    //     const userExists = await User.findOne({ email });
-    //     if (userExists) {
-    //         return res.status(400).json({ message: "Email already exists" });
-    //     }
-
-    //     const newUser = new User({
-    //         email,
-    //         phone,
-    //         password, // Pass plain text password
-    //     });
-    //     await newUser.save();
-
-    //     console.log("Stored password hash:", newUser.password); // Log hashed password
-    //     res.status(201).json({ message: "User registered successfully" });
-    // } catch (error) {
-    //     console.error("Registration error:", error);
-    //     res.status(500).json({ message: "Internal Server Error" });
-    // }
-
-
 
 
     try {

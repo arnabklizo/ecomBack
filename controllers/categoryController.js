@@ -10,8 +10,10 @@ exports.createCategory = async (req, res) => {
         }
 
         // Upload image to Cloudinary
-        const result = await cloudinary.uploader.upload(req.file.path);
-
+        // const result = await cloudinary.uploader.upload(req.file.path);
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: "category",
+        });;
         // Save category to database
         const category = new Category({
             name,
@@ -32,7 +34,7 @@ exports.getCategories = async (req, res) => {
     try {
         // const categories = await Category.find().sort({ createdAt: -1 }); // Sort by latest
         const categories = await Category.find() // Sort by latest
-        const count = await Category.countDocuments(); // Count the total categories
+        const count = await Category.countDocuments();
         res.status(200).json({ categories, count });
     } catch (error) {
         console.error(error);
@@ -69,7 +71,9 @@ exports.delCategoryById = async (req, res) => {
 
         // Extract the public_id from the imageUrl
         const imageUrl = category.imageUrl;
-        const publicId = imageUrl.split('/').pop().split('.')[0];
+        const parts = imageUrl.split('/');
+        const folderAndImage = parts.slice(-2).join('/'); // Extract last two parts (folder and file name)
+        const publicId = folderAndImage.split('.')[0]; // Remove file extension
 
         // Delete the image from Cloudinary
         await cloudinary.uploader.destroy(publicId, (error, result) => {
@@ -77,7 +81,7 @@ exports.delCategoryById = async (req, res) => {
                 console.error('Error deleting image from Cloudinary:', error);
                 return res.status(500).json({ message: 'Error deleting image from Cloudinary', error });
             }
-            // console.log('Cloudinary response:', result);
+            console.log('Cloudinary response:', result);
         });
 
         // Delete the category from the database

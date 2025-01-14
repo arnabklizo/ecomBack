@@ -3,28 +3,29 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
+        required: true
     },
     description: {
         type: String,
-        required: true,
+        required: true
     },
     inStock: {
-        type: Boolean,
-        default: true,
+        type: Number,
+        default: true
     },
     imageUrl: {
         type: [String], // Array to store image URLs
-        validate: [(val) => val.length <= 4, "Maximum 4 images are allowed."], // Validate maximum 4 images
-        required: true,
+        validate: [(val) => val.length <= 4, "Maximum 4 images are allowed."],
+        required: true
     },
     price: {
         type: Number,
-        required: true,
+        required: true
     },
     discountPrice: {
         type: Number,
         default: 0,
+        required: true
     },
     productFor: {
         type: String,
@@ -33,21 +34,13 @@ const productSchema = new mongoose.Schema({
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: true
+        ref: "Category", required: true
     },
-});
+    productFeatures: {
+        type: String,
+        required: true
+    }
 
-// Pre-save hook to update `updatedAt` before every update
-productSchema.pre("save", function (next) {
-    this.updatedAt = Date.now();
-    next();
-});
-
-// Method to update stock
-productSchema.methods.updateStock = function (quantity) {
-    this.stock -= quantity;
-    return this.save();
-};
+}, { timestamps: true });
 
 module.exports = mongoose.model("Product", productSchema);

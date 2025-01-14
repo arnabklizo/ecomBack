@@ -1,12 +1,23 @@
 const express = require("express");
-const { addProduct, getAllProducts } = require("../controllers/productController");
-const protectAdmin = require("../middlewares/adminMiddleware");
+const multer = require("multer");
+const { addProduct, getAllProducts, getProduct, delProductById } = require("../controllers/productController");
+
 const router = express.Router();
+const upload = multer({ dest: "uploads/" }); // Temp folder for uploads
 
-// Admin-only routes
-router.post("/", protectAdmin, addProduct);
+router.post("/addProduct", upload.array("images", 4), addProduct);
 
-// Public route to view all products
-router.get("/", getAllProducts);
+
+// Fetch all products
+router.get('/', getAllProducts);
+
+// Fetch a single product by ID
+router.get('/:id', getProduct);
+
+// delete a single category by ID
+router.delete('/:id', delProductById);
+
+// update a single category by ID
+router.put('/:id',)
 
 module.exports = router;
