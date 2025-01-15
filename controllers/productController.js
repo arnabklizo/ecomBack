@@ -36,6 +36,7 @@ exports.addProduct = async (req, res) => {
             return res.status(400).json({ success: false, error: "Add minimum one image !" });
         }
 
+        // add images 
         const imageUrls = [];
         for (const file of imageFiles) {
             const uploadResult = await cloudinary.uploader.upload(file.path, {
@@ -43,6 +44,9 @@ exports.addProduct = async (req, res) => {
             });
             imageUrls.push(uploadResult.secure_url);
         }
+
+        // add points 
+        const productFeaturese = JSON.parse(productFeatures.replace(/'/g, '"'))
 
         // Create product
         const product = new Product({
@@ -54,7 +58,7 @@ exports.addProduct = async (req, res) => {
             productFor,
             category: categories,
             imageUrl: imageUrls,
-            productFeatures: productFeatures || "[]",
+            productFeatures: productFeaturese,
         });
 
         const category = await Category.findById(categories)
@@ -74,7 +78,7 @@ exports.addProduct = async (req, res) => {
 exports.getProduct = async (req, res) => {
     const { id } = req.params;
     try {
-        const product = await Product.findById(id);
+        const product = await Product.findById(id).populate('category', 'name');
         if (!product) {
             return res.status(404).json({ message: 'Product is not exist' });
         }
@@ -88,8 +92,9 @@ exports.getProduct = async (req, res) => {
 // get all products 
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find();
-        res.status(200).json({ success: true, products });
+        const products = await Product.find().populate('category', 'name');
+        const count = await Product.countDocuments();
+        res.status(200).json({ success: true, products, count });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch products' });
     }
