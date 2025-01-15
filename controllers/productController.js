@@ -92,9 +92,39 @@ exports.getProduct = async (req, res) => {
 // get all products 
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().populate('category', 'name');
-        const count = await Product.countDocuments();
-        res.status(200).json({ success: true, products, count });
+        // Get page and limit from query parameters, with default values
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+        const sortField = req.query.sortField || 'createdAt';
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+        const category = req.query.category || '';
+
+        // Build query based on category
+        const query = category ? { 'category.name': "women" } : {};
+
+
+        // Calculate the starting index for the query
+        const skip = (page - 1) * limit;
+
+        const products = await Product.find(query)
+            .sort({ [sortField]: sortOrder }) // Sort
+            .skip(skip)
+            .limit(limit)
+            .populate('category', 'name');
+
+        console.log('query:', query)
+
+        const totalCount = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.status(200).json({
+            success: true,
+            products,
+            totalCount,
+            totalPages,
+            currentPage: page,
+        });
+
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch products' });
     }

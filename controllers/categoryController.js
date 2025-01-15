@@ -32,10 +32,33 @@ exports.createCategory = async (req, res) => {
 // Fetch all categories
 exports.getCategories = async (req, res) => {
     try {
-        // const categories = await Category.find().sort({ createdAt: -1 }); // Sort by latest
-        const categories = await Category.find() // Sort by latest
-        const count = await Category.countDocuments();
-        res.status(200).json({ categories, count });
+
+        // Get page and limit from query parameters, with default values
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+        const sortField = req.query.sortField;
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+        // Calculate the starting index for the query
+        const skip = (page - 1) * limit;
+
+        const categories = await Category.find()
+            .sort({ [sortField]: sortOrder }) // Sort
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await Category.countDocuments();
+
+        // Calculate the total number of pages
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.status(200).json({
+            categories,
+            totalCount,
+            totalPages,
+            currentPage: page,
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch categories' });
