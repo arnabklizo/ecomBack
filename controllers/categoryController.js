@@ -38,16 +38,20 @@ exports.getCategories = async (req, res) => {
         const limit = parseInt(req.query.limit);
         const sortField = req.query.sortField;
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+        const search = req.query.searchQuery;
+
+
+        const query = search ? { name: { $regex: search, $options: 'i' } } : {};
 
         // Calculate the starting index for the query
         const skip = (page - 1) * limit;
 
-        const categories = await Category.find()
+        const categories = await Category.find(query)
             .sort({ [sortField]: sortOrder }) // Sort
             .skip(skip)
             .limit(limit);
 
-        const totalCount = await Category.countDocuments();
+        const totalCount = await Category.countDocuments(query);
 
         // Calculate the total number of pages
         const totalPages = Math.ceil(totalCount / limit);
