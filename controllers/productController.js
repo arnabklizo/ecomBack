@@ -101,9 +101,14 @@ exports.updateProduct = async (req, res) => {
             productFor,
             categories,
             productFeatures,
+            // existingImages, // Array of existing image URLs to retain
+            images
         } = req.body;
 
-        console.log(req.body)
+        console.log("Updating product:", id);
+        console.log("Request body:", req.body);
+        console.log("Request files:", req.files);
+
         // Validate Product ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ success: false, error: "Invalid product ID." });
@@ -115,12 +120,12 @@ exports.updateProduct = async (req, res) => {
             return res.status(404).json({ success: false, error: "Product not found." });
         }
 
-        // Update fields
+        // Update product fields
         if (productName) product.name = productName;
         if (productDescription) product.description = productDescription;
         if (productStock !== undefined) product.inStock = productStock;
         if (productPrice) product.price = productPrice;
-        if (discountPrice) product.discountPrice = discountPrice;
+        if (discountPrice !== undefined) product.discountPrice = discountPrice;
         if (productFor) product.productFor = productFor;
 
         // Update category if changed
@@ -144,30 +149,45 @@ exports.updateProduct = async (req, res) => {
         if (productFeatures) {
             try {
                 product.productFeatures = JSON.parse(productFeatures);
-            } catch {
+            } catch (error) {
                 return res.status(400).json({ success: false, error: "Invalid product features format!" });
             }
         }
 
-        // Handle image updates
+        // Handle image uploads
+        let updatedImages = Array.isArray(images) ? images : [];
+
+        // If new files are uploaded, process them
         if (req.files && req.files.length > 0) {
-            // Upload new images
-            const newImageUrls = await Promise.all(
-                req.files.map(file => cloudinary.uploader.upload(file.path, { folder: "products" }))
-            ).then(results => results.map(result => result.secure_url));
-
-            // Delete old images from Cloudinary
-            const oldImagePublicIds = product.imageUrl.map(url => {
-                const parts = url.split("/");
-                return parts[parts.length - 1].split(".")[0]; // Extract public ID
-            });
-            await Promise.all(oldImagePublicIds.map(publicId => cloudinary.uploader.destroy(`products/${publicId}`)));
-
-            // Update product with new images
-            product.imageUrl = newImageUrls;
+            const uploadedImages = await Promise.all(
+                req.files.map((file) =>
+                    cloudinary.uploader.upload(file.path, { folder: "products" })
+                )
+            );
+            // Add new image URLs to updatedImages array
+            updatedImages.push(...uploadedImages.map((result) => result.secure_url));
         }
 
-        // Save updated product
+        // Remove old images that are not part of existingImages
+        const imagesToDelete = product.imageUrl.filter(
+            (url) => !updatedImages.includes(url)
+        );
+
+        // Delete removed images from Cloudinary
+        const oldImagePublicIds = imagesToDelete.map((url) => {
+            const parts = url.split("/");
+            return parts.slice(-2).join("/").split(".")[0]; // Extract public ID
+        });
+        await Promise.all(
+            oldImagePublicIds.map((publicId) =>
+                cloudinary.uploader.destroy(`products/${publicId}`)
+            )
+        );
+
+        // Update product with the final image list
+        product.imageUrl = updatedImages;
+
+        // Save the updated product
         await product.save();
 
         res.status(200).json({ success: true, message: "Product updated successfully", product });
@@ -176,6 +196,7 @@ exports.updateProduct = async (req, res) => {
         res.status(500).json({ success: false, error: "Server error while updating product." });
     }
 };
+
 
 // get all products 
 exports.getAllProducts = async (req, res) => {
@@ -252,3 +273,5 @@ exports.delProductById = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
+
+

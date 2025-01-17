@@ -18,6 +18,6 @@ router.get('/:id', getProduct);
 router.delete('/:id', delProductById);
 
 // update a single category by ID
-router.put('/:id', updateProduct)
+router.put('/:id', upload.array('images'), updateProduct)
 
 module.exports = router;
