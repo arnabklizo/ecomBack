@@ -245,33 +245,76 @@ exports.getAllProducts = async (req, res) => {
 
 
 // delete product
+// exports.delProductById = async (req, res) => {
+//     const { id } = req.params;
+
+//     try {
+//         // Find the category by ID
+//         const product = await Product.findById(id);
+//         if (!product) {
+//             return res.status(404).json({ message: 'Product not found' });
+//         }
+//         for (const imageUrl of product.imageUrl) {
+//             const parts = imageUrl.split('/');
+//             const publicId = parts.slice(-2).join('/').split('.')[0]; // Extract the public_id from URL
+//             await cloudinary.uploader.destroy(publicId); // Delete the image from Cloudinary
+//         }
+
+//         const category = await Category.findById(product.category)
+//         category.itemCount -= 1;
+//         await category.save();
+
+//         // Delete the category from the database
+//         await product.deleteOne();
+
+//         res.status(200).json({ message: 'Product and associated image deleted successfully', id });
+//     } catch (error) {
+//         console.error('Error deleting category:', error);
+//         res.status(500).json({ message: 'Server error', error });
+//     }
+// };
+
+const fs = require('fs');
+const path = require('path');
+
+// delete product
 exports.delProductById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Find the category by ID
+        // Find the product by ID
         const product = await Product.findById(id);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
+
+        // Delete images from Cloudinary
         for (const imageUrl of product.imageUrl) {
             const parts = imageUrl.split('/');
             const publicId = parts.slice(-2).join('/').split('.')[0]; // Extract the public_id from URL
             await cloudinary.uploader.destroy(publicId); // Delete the image from Cloudinary
         }
 
-        const category = await Category.findById(product.category)
+        // Remove local images from the uploads folder
+        for (const file of product.imageUrl) {
+            const localImagePath = path.join(__dirname, '../', 'uploads', file.split('/').pop()); // Assuming image name is part of the URL
+            if (fs.existsSync(localImagePath)) {
+                fs.unlinkSync(localImagePath); // Delete the local file
+            }
+        }
+
+        // Update category item count
+        const category = await Category.findById(product.category);
         category.itemCount -= 1;
         await category.save();
 
-        // Delete the category from the database
+        // Delete the product from the database
         await product.deleteOne();
 
-        res.status(200).json({ message: 'Product and associated image deleted successfully', id });
+        res.status(200).json({ message: 'Product and associated images deleted successfully', id });
     } catch (error) {
-        console.error('Error deleting category:', error);
+        console.error('Error deleting product:', error);
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 
