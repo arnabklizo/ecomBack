@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const cloudinary = require("../cloudinary/cloudinary");
 const mongoose = require("mongoose");
 const Category = require("../models/Category");
+const fs = require('fs/promises')
 
 //add product
 exports.addProduct = async (req, res) => {
@@ -43,6 +44,9 @@ exports.addProduct = async (req, res) => {
                 folder: "products",
             });
             imageUrls.push(uploadResult.secure_url);
+
+            // Delete the temporary file
+            await fs.unlink(file.path);
         }
 
         // add points 
@@ -101,13 +105,12 @@ exports.updateProduct = async (req, res) => {
             productFor,
             categories,
             productFeatures,
-            // existingImages, // Array of existing image URLs to retain
             images
         } = req.body;
 
-        console.log("Updating product:", id);
-        console.log("Request body:", req.body);
-        console.log("Request files:", req.files);
+        // console.log("Updating product:", id);
+        // console.log("Request body:", req.body);
+        // console.log("Request files:", req.files);
 
         // Validate Product ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -243,38 +246,7 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
-
-// delete product
-// exports.delProductById = async (req, res) => {
-//     const { id } = req.params;
-
-//     try {
-//         // Find the category by ID
-//         const product = await Product.findById(id);
-//         if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//         }
-//         for (const imageUrl of product.imageUrl) {
-//             const parts = imageUrl.split('/');
-//             const publicId = parts.slice(-2).join('/').split('.')[0]; // Extract the public_id from URL
-//             await cloudinary.uploader.destroy(publicId); // Delete the image from Cloudinary
-//         }
-
-//         const category = await Category.findById(product.category)
-//         category.itemCount -= 1;
-//         await category.save();
-
-//         // Delete the category from the database
-//         await product.deleteOne();
-
-//         res.status(200).json({ message: 'Product and associated image deleted successfully', id });
-//     } catch (error) {
-//         console.error('Error deleting category:', error);
-//         res.status(500).json({ message: 'Server error', error });
-//     }
-// };
-
-const fs = require('fs');
+// const fs = require('fs');
 const path = require('path');
 
 // delete product
@@ -301,6 +273,7 @@ exports.delProductById = async (req, res) => {
             if (fs.existsSync(localImagePath)) {
                 fs.unlinkSync(localImagePath); // Delete the local file
             }
+            // console.log('localImagePath', localImagePath)
         }
 
         // Update category item count
