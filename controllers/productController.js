@@ -2,7 +2,8 @@ const Product = require("../models/Product");
 const cloudinary = require("../cloudinary/cloudinary");
 const mongoose = require("mongoose");
 const Category = require("../models/Category");
-const fs = require('fs/promises')
+const fs = require('fs/promises');
+const path = require('path');
 
 //add product
 exports.addProduct = async (req, res) => {
@@ -169,6 +170,9 @@ exports.updateProduct = async (req, res) => {
             );
             // Add new image URLs to updatedImages array
             updatedImages.push(...uploadedImages.map((result) => result.secure_url));
+
+            // Delete the temporary file
+            await fs.unlink(file.path);
         }
 
         // Remove old images that are not part of existingImages
@@ -246,8 +250,6 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
-// const fs = require('fs');
-const path = require('path');
 
 // delete product
 exports.delProductById = async (req, res) => {

@@ -1,6 +1,6 @@
 const Category = require("../models/Category");
 const cloudinary = require('../cloudinary/cloudinary');
-
+const fs = require('fs/promises');
 
 exports.createCategory = async (req, res) => {
     try {
@@ -14,6 +14,10 @@ exports.createCategory = async (req, res) => {
         const result = await cloudinary.uploader.upload(req.file.path, {
             folder: "category",
         });;
+
+        // Delete the temporary file
+        await fs.unlink(req.file.path);
+
         // Save category to database
         const category = new Category({
             name,
