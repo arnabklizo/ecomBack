@@ -1,6 +1,13 @@
 const express = require("express");
 const multer = require("multer");
-const { addProduct, getAllProducts, getProduct, delProductById, updateProduct } = require("../controllers/productController");
+const {
+    addProduct,
+    getAllProducts,
+    getProduct,
+    delProductById,
+    updateProduct,
+    getProductsByCategory
+} = require("../controllers/productController");
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/" }); // Temp folder for uploads
@@ -20,4 +27,6 @@ router.delete('/:id', delProductById);
 // update a single category by ID
 router.put('/:id', upload.array('images'), updateProduct)
 
+// Fetch products by category ID
+router.get('/category/:categoryId', getProductsByCategory);
 module.exports = router;

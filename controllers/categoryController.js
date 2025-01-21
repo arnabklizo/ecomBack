@@ -10,7 +10,6 @@ exports.createCategory = async (req, res) => {
         }
 
         // Upload image to Cloudinary
-        // const result = await cloudinary.uploader.upload(req.file.path);
         const result = await cloudinary.uploader.upload(req.file.path, {
             folder: "category",
         });;
@@ -112,7 +111,7 @@ exports.delCategoryById = async (req, res) => {
                 console.error('Error deleting image from Cloudinary:', error);
                 return res.status(500).json({ message: 'Error deleting image from Cloudinary', error });
             }
-            console.log('Cloudinary response:', result);
+            // console.log('Cloudinary response:', result);
         });
 
         // Delete the category from the database

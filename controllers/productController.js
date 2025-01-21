@@ -106,12 +106,8 @@ exports.updateProduct = async (req, res) => {
             productFor,
             categories,
             productFeatures,
-            images
+            images,
         } = req.body;
-
-        // console.log("Updating product:", id);
-        // console.log("Request body:", req.body);
-        // console.log("Request files:", req.files);
 
         // Validate Product ID
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -152,7 +148,11 @@ exports.updateProduct = async (req, res) => {
         // Parse and update product features
         if (productFeatures) {
             try {
-                product.productFeatures = JSON.parse(productFeatures);
+                const parsedFeatures = JSON.parse(productFeatures);
+                if (!Array.isArray(parsedFeatures) || parsedFeatures.some((f) => typeof f !== "string")) {
+                    throw new Error("Invalid product features format!");
+                }
+                product.productFeatures = parsedFeatures;
             } catch (error) {
                 return res.status(400).json({ success: false, error: "Invalid product features format!" });
             }
@@ -160,43 +160,30 @@ exports.updateProduct = async (req, res) => {
 
         // Handle image uploads
         let updatedImages = Array.isArray(images) ? images : [];
-
-        // If new files are uploaded, process them
         if (req.files && req.files.length > 0) {
             const uploadedImages = await Promise.all(
-                req.files.map((file) =>
-                    cloudinary.uploader.upload(file.path, { folder: "products" })
-                )
+                req.files.map((file) => cloudinary.uploader.upload(file.path, { folder: "products" }))
             );
-            // Add new image URLs to updatedImages array
             updatedImages.push(...uploadedImages.map((result) => result.secure_url));
-
-            // Delete the temporary file
-            await fs.unlink(file.path);
+            // Delete temporary files
+            await Promise.all(req.files.map((file) => fs.unlink(file.path)));
         }
 
-        // Remove old images that are not part of existingImages
-        const imagesToDelete = product.imageUrl.filter(
-            (url) => !updatedImages.includes(url)
-        );
-
-        // Delete removed images from Cloudinary
+        // Determine images to delete
+        const imagesToDelete = product.imageUrl.filter((url) => !updatedImages.includes(url));
         const oldImagePublicIds = imagesToDelete.map((url) => {
             const parts = url.split("/");
-            return parts.slice(-2).join("/").split(".")[0]; // Extract public ID
+            return parts.slice(-2).join("/").split(".")[0];
         });
-        await Promise.all(
-            oldImagePublicIds.map((publicId) =>
-                cloudinary.uploader.destroy(`products/${publicId}`)
-            )
-        );
 
-        // Update product with the final image list
+        // Delete images from Cloudinary
+        await Promise.all(oldImagePublicIds.map((publicId) => cloudinary.uploader.destroy(`products/${publicId}`)));
+
+        // Update product images
         product.imageUrl = updatedImages;
 
         // Save the updated product
         await product.save();
-
         res.status(200).json({ success: true, message: "Product updated successfully", product });
     } catch (error) {
         console.error("Error updating product:", error);
@@ -220,7 +207,6 @@ exports.getAllProducts = async (req, res) => {
         const skip = (page - 1) * limit;
 
         // Fetch products and populate category
-
         let products = await Product.find(query)
             .populate('category', 'name')
             .sort({ [sortField]: sortOrder })
@@ -269,14 +255,14 @@ exports.delProductById = async (req, res) => {
             await cloudinary.uploader.destroy(publicId); // Delete the image from Cloudinary
         }
 
-        // Remove local images from the uploads folder
-        for (const file of product.imageUrl) {
-            const localImagePath = path.join(__dirname, '../', 'uploads', file.split('/').pop()); // Assuming image name is part of the URL
-            if (fs.existsSync(localImagePath)) {
-                fs.unlinkSync(localImagePath); // Delete the local file
-            }
-            // console.log('localImagePath', localImagePath)
-        }
+        // // Remove local images from the uploads folder
+        // for (const file of product.imageUrl) {
+        //     const localImagePath = path.join(__dirname, '../', 'uploads', file.split('/').pop()); // Assuming image name is part of the URL
+        //     if (fs.existsSync(localImagePath)) {
+        //         fs.unlinkSync(localImagePath); // Delete the local file
+        //     }
+        //     // console.log('localImagePath', localImagePath)
+        // }
 
         // Update category item count
         const category = await Category.findById(product.category);
@@ -290,6 +276,46 @@ exports.delProductById = async (req, res) => {
     } catch (error) {
         console.error('Error deleting product:', error);
         res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+
+// Fetch products by category ID
+exports.getProductsByCategory = async (req, res) => {
+    const { categoryId } = req.params;
+    const { productFor } = req.query;
+
+    try {
+        // Validate category ID
+        if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+            return res.status(400).json({ success: false, error: "Invalid category ID." });
+        }
+
+        // Check if the category exists
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({ success: false, error: "Category not found." });
+        }
+
+        // Build the query object
+        const query = { category: categoryId };
+        if (productFor) {
+            query.productFor = productFor; // Add filtering by productFor
+        }
+
+        // Fetch products based on category and filter criteria
+        const products = await Product.find(query).populate("category", "name");
+        // Fetch products in the specified category
+        // const products = await Product.find({ category: categoryId }).populate("category", "name");
+
+        res.status(200).json({
+            success: true,
+            category: category.name,
+            products,
+        });
+    } catch (error) {
+        console.error("Error fetching products by category:", error);
+        res.status(500).json({ success: false, error: "Server error while fetching products." });
     }
 };
 
