@@ -305,8 +305,6 @@ exports.getProductsByCategory = async (req, res) => {
 
         // Fetch products based on category and filter criteria
         const products = await Product.find(query).populate("category", "name");
-        // Fetch products in the specified category
-        // const products = await Product.find({ category: categoryId }).populate("category", "name");
 
         res.status(200).json({
             success: true,
