@@ -31,15 +31,15 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 
-app.use("/api/admin", adminRoutes);
-app.use("/api/admin/categories", categoryRoutes);
+app.use("/admin", adminRoutes);
+app.use("/admin/categories", categoryRoutes);
 
 
-app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/products", productRoutes);
+app.use("/orders", orderRoutes);
 
 
 app.use((req, res, next) => {

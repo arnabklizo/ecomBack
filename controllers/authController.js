@@ -7,8 +7,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 // Register User
 exports.registerUser = async (req, res) => {
-
-
     try {
         const { email, phone, password } = req.body;
 
@@ -32,8 +30,13 @@ exports.registerUser = async (req, res) => {
         await newUser.save();
 
         // Generate JWT
-        const token = signToken({ id: newUser._id, email: newUser.email });
-        // const token = jwt.sign({ id: newUser._id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign({ id: newUser._id, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        res.cookie("user", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000, // 1 day
+        });
 
         res.status(201).json({
             message: "User registered successfully",
@@ -45,7 +48,6 @@ exports.registerUser = async (req, res) => {
     }
 };
 
-
 // Login User
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -56,34 +58,49 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid email" });
         }
 
-        // Validate password before generating the JWT
         const isMatch = await user.matchPassword(password);
-        // console.log('Entered password:', password);
-        // console.log('Stored hashed password:', user.password);  // Log the stored hash
-        // console.log('Password match result:', isMatch);  // Log if password matched or not
-
-
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid password" });
         }
 
         const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
-        res.json({ token });  // Send token in the response
+
+        res.cookie("user", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000, // 1 day
+        });
+        res.status(200).json({ message: "Login successful !!" });
+
+        // res.json({ token });  // Send token in the response
     } catch (err) {
         console.error("Login error:", err);
         res.status(500).json({ message: "An error occurred during login" });
     }
 };
 
-
-
 // Logout User
 exports.logoutUser = (req, res) => {
-    res.cookie("token", "", {
+    res.cookie("user", "", {
         httpOnly: true,
-        secure: false, // Should be set to true if using HTTPS in production
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        expires: new Date(0), // Expire the cookie
+        expires: new Date(0),
     });
     res.status(200).json({ message: "Logged out successfully" });
+};
+
+// login checker 
+exports.isAuthenticated = (req, res) => {
+    const token = req.cookies.user; // Access the cookie
+    if (!token) {
+        return res.status(200).json({ isAuthenticated: false });
+    }
+    try {
+        jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+        res.status(200).json({ isAuthenticated: true });
+    } catch (err) {
+        res.status(401).json({ isAuthenticated: false });
+    }
 };
