@@ -10,7 +10,7 @@ exports.registerUser = async (req, res) => {
     try {
         const { email, phone, password } = req.body;
 
-        console.log("Registration attempt:", { email, phone, password });
+        // console.log("Registration attempt:", { email, phone, password });
 
         // Check if user already exists
         const userExists = await User.findOne({ email });
@@ -71,7 +71,7 @@ exports.loginUser = async (req, res) => {
             sameSite: "lax",
             maxAge: 24 * 60 * 60 * 1000, // 1 day
         });
-        res.status(200).json({ message: "Login successful !!" });
+        res.status(200).json({ userId: user._id, message: "Login successful !!" });
 
         // res.json({ token });  // Send token in the response
     } catch (err) {

@@ -1,28 +1,21 @@
-const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-dotenv.config();
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const verifyToken = (req, res, next) => {
-    const token = req.cookies.user;
+const protect = async (req, res, next) => {
+    const token = req.cookies.user; // Get token from cookies
+
     if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
+        return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: "Unauthorized: Invalid token" });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the JWT
+        req.user = decoded; // Attach user info to the request object
+        next(); // Proceed to the next middleware/route handler
+    } catch (err) {
+        return res.status(401).json({ message: 'Not authoried, Invalid token' });
     }
 };
 
-module.exports = verifyToken;
-
-// that uou are loged in
-// // Example usage
-// app.get("/protected-route", verifyToken, (req, res) => {
-//     res.status(200).json({ message: "You are authorized", user: req.user });
-// });
-
+module.exports = protect;
 

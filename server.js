@@ -14,7 +14,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const adminRoutes = require("./routes/adminRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-
+const userRoutes = require("./routes/userRouts");
 
 dotenv.config();
 connectDB();
@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/auth", authRoutes);
-
+app.use('/user', userRoutes);
 
 app.use("/admin", adminRoutes);
 app.use("/admin/categories", categoryRoutes);
