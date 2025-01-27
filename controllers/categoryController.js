@@ -12,7 +12,7 @@ exports.createCategory = async (req, res) => {
         // Upload image to Cloudinary
         const result = await cloudinary.uploader.upload(req.file.path, {
             folder: "category",
-        });;
+        });
 
         // Delete the temporary file
         await fs.unlink(req.file.path);

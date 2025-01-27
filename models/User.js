@@ -21,6 +21,9 @@ const userSchema = new mongoose.Schema({
     lastName: {
         type: String,
     },
+    imageUrl: {
+        type: String,
+    },
     addresses: [
         {
             addressLine1: {
@@ -43,7 +46,7 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
-});
+}, { timestamps: true });
 
 
 // Encrypt password before saving
