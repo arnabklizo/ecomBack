@@ -25,7 +25,7 @@ exports.createCategory = async (req, res) => {
 
         await category.save();
 
-        res.status(201).json({ message: "Category created successfully", category });
+        res.status(201).json({ message: "Category created successfully !", category });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -104,9 +104,8 @@ exports.delCategoryById = async (req, res) => {
         const parts = imageUrl.split('/');
         const folderAndImage = parts.slice(-2).join('/'); // Extract last two parts (folder and file name)
         const publicId = folderAndImage.split('.')[0]; // Remove file extension
-
         // Delete the image from Cloudinary
-        await cloudinary.uploader.destroy(publicId, (error, result) => {
+        await cloudinary.uploader.destroy(`${publicId}`, (error, result) => {
             if (error) {
                 console.error('Error deleting image from Cloudinary:', error);
                 return res.status(500).json({ message: 'Error deleting image from Cloudinary', error });
@@ -117,7 +116,7 @@ exports.delCategoryById = async (req, res) => {
         // Delete the category from the database
         await category.deleteOne();
 
-        res.status(200).json({ message: 'Category and associated image deleted successfully', id });
+        res.status(200).json({ message: 'Category deleted successfully !', id });
     } catch (error) {
         console.error('Error deleting category:', error);
         res.status(500).json({ message: 'Server error', error });
@@ -130,7 +129,9 @@ exports.updateCategory = async (req, res) => {
     const { id } = req.params;
     const { name, imageUrl } = req.body; // Get the new name and image URL from the request body
     // console.log('name :', name);
-    // console.log('imageUrl :', imageUrl);
+    console.log('imageUrl :', imageUrl);
+    console.log('imageUrl :', req.file);
+
     // console.log('name', name);
 
     try {
@@ -149,7 +150,8 @@ exports.updateCategory = async (req, res) => {
                 .split('/')
                 .pop()
                 .split('.')[0];
-            await cloudinary.uploader.destroy(oldImagePublicId);
+            await cloudinary.uploader.destroy(`category/${oldImagePublicId}`);
+            // console.log('oldImagePublicId', oldImagePublicId)
 
         }
 
@@ -162,11 +164,11 @@ exports.updateCategory = async (req, res) => {
         // console.log('Updated category:', updatedCategory);
 
         if (!updatedCategory) {
-            return res.status(400).json({ message: 'Category update failed' });
+            return res.status(400).json({ message: 'Category update failed !' });
         }
 
         res.status(200).json({
-            message: 'Category updated successfully',
+            message: 'Category updated successfully !',
             category: updatedCategory,
         });
     } catch (error) {

@@ -11,7 +11,7 @@ module.exports.createReview = async (req, res) => {
             rating,
         });
         await newReview.save();
-        res.status(201).json({ message: "Review added successfully", review: newReview });
+        res.status(201).json({ message: "Review added successfully.!", review: newReview });
     } catch (error) {
         res.status(500).json({ message: "Error adding review", error: error.message });
     }
@@ -29,11 +29,26 @@ module.exports.getReviewsByProduct = async (req, res) => {
     }
 };
 
+// Get reviews by user Id ID
+module.exports.getReviewsByUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const reviews = await Review.find({ userId }).populate("productId", "name imageUrl",);
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching reviews", error: error.message });
+    }
+};
+
 // Update a review
 module.exports.updateReview = async (req, res) => {
     try {
         const { id } = req.params;
         const { review, rating } = req.body;
+        console.log('review', review);
+        console.log('rating', rating);
+        console.log('id', id);
+
 
         const updatedReview = await Review.findByIdAndUpdate(
             id,
@@ -45,7 +60,7 @@ module.exports.updateReview = async (req, res) => {
             return res.status(404).json({ message: "Review not found" });
         }
 
-        res.status(200).json({ message: "Review updated successfully", review: updatedReview });
+        res.status(200).json({ message: "Review updated successfully.!", review: updatedReview });
     } catch (error) {
         res.status(500).json({ message: "Error updating review", error: error.message });
     }
@@ -62,7 +77,7 @@ module.exports.deleteReview = async (req, res) => {
             return res.status(404).json({ message: "Review not found" });
         }
 
-        res.status(200).json({ message: "Review deleted successfully" });
+        res.status(200).json({ message: "Review deleted successfully.!" });
     } catch (error) {
         res.status(500).json({ message: "Error deleting review", error: error.message });
     }

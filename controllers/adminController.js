@@ -33,7 +33,7 @@ exports.loginAdmin = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000, // 1 day
         });
 
-        res.status(200).json({ message: "Login successful" });
+        res.status(200).json({ message: "Admin login successful.!" });
     } catch (error) {
         console.error("Admin login error:", error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -49,7 +49,7 @@ exports.logoutAdmin = (req, res) => {
             sameSite: 'None', // For cross-origin cookies
             expires: new Date(0), // Expire the cookie immediately
         });
-        res.status(200).json({ message: "Logged out successfully by Admin" });
+        res.status(200).json({ message: "Admin logged out successfully !!" });
     } catch (error) {
         res.status(500).json({ message: "Failed to log out." });
     }

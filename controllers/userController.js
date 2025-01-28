@@ -67,7 +67,7 @@ module.exports.updateUserDetails = async (req, res) => {
 
 
         await user.save();
-        res.status(200).json({ message: "User details updated successfully", user });
+        res.status(200).json({ message: "Your details updated successfully.!", user });
     } catch (error) {
         res.status(500).json({ message: "Error updating user details", error: error.message });
     }

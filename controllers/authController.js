@@ -88,7 +88,7 @@ exports.logoutUser = (req, res) => {
         sameSite: "lax",
         expires: new Date(0),
     });
-    res.status(200).json({ message: "Logged out successfully" });
+    res.status(200).json({ message: "Logged out successfully .!" });
 };
 
 // login checker 

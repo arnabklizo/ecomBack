@@ -71,7 +71,7 @@ exports.addProduct = async (req, res) => {
         await category.save();
 
         await product.save();
-        res.status(201).json({ success: true, message: "Product Added successfully", product });
+        res.status(201).json({ success: true, message: "Product Added successfully !", product });
     } catch (error) {
         console.error("Error adding product:", error);
         res.status(500).json({ success: false, error: "Server error while adding product." });
@@ -184,7 +184,7 @@ exports.updateProduct = async (req, res) => {
 
         // Save the updated product
         await product.save();
-        res.status(200).json({ success: true, message: "Product updated successfully", product });
+        res.status(200).json({ success: true, message: "Product updated successfully !", product });
     } catch (error) {
         console.error("Error updating product:", error);
         res.status(500).json({ success: false, error: "Server error while updating product." });
@@ -272,7 +272,7 @@ exports.delProductById = async (req, res) => {
         // Delete the product from the database
         await product.deleteOne();
 
-        res.status(200).json({ message: 'Product and associated images deleted successfully', id });
+        res.status(200).json({ message: 'Product deleted successfully !', id });
     } catch (error) {
         console.error('Error deleting product:', error);
         res.status(500).json({ message: 'Server error', error });
