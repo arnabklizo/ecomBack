@@ -177,7 +177,7 @@ exports.updateProduct = async (req, res) => {
         });
 
         // Delete images from Cloudinary
-        await Promise.all(oldImagePublicIds.map((publicId) => cloudinary.uploader.destroy(`products/${publicId}`)));
+        await Promise.all(oldImagePublicIds.map((publicId) => cloudinary.uploader.destroy(`${publicId}`)));
 
         // Update product images
         product.imageUrl = updatedImages;
@@ -190,7 +190,6 @@ exports.updateProduct = async (req, res) => {
         res.status(500).json({ success: false, error: "Server error while updating product." });
     }
 };
-
 
 // get all products 
 exports.getAllProducts = async (req, res) => {
@@ -236,7 +235,6 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
-
 // delete product
 exports.delProductById = async (req, res) => {
     const { id } = req.params;
@@ -278,7 +276,6 @@ exports.delProductById = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 
 // Fetch products by category ID
 exports.getProductsByCategory = async (req, res) => {

@@ -6,11 +6,12 @@ const {
     deleteReview,
     getReviewsByUser,
 } = require("../controllers/reviewController");
+const protect = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Create a new review
-router.post("/", createReview);
+router.post("/", protect, createReview);
 
 // Get reviews by product ID
 router.get("/:productId", getReviewsByProduct);

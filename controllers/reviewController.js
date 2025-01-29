@@ -45,9 +45,9 @@ module.exports.updateReview = async (req, res) => {
     try {
         const { id } = req.params;
         const { review, rating } = req.body;
-        console.log('review', review);
-        console.log('rating', rating);
-        console.log('id', id);
+        // console.log('review', review);
+        // console.log('rating', rating);
+        // console.log('id', id);
 
 
         const updatedReview = await Review.findByIdAndUpdate(

@@ -125,55 +125,94 @@ exports.delCategoryById = async (req, res) => {
 
 
 // update a single category by ID
-exports.updateCategory = async (req, res) => {
-    const { id } = req.params;
-    const { name, imageUrl } = req.body; // Get the new name and image URL from the request body
-    // console.log('name :', name);
-    console.log('imageUrl :', imageUrl);
-    console.log('imageUrl :', req.file);
+// exports.updateCategory = async (req, res) => {
+//     const { id } = req.params;
+//     const { name } = req.body; // Updated category name
+//     try {
+//         const category = await Category.findById(id);
+//         if (!category) {
+//             return res.status(404).json({ message: "Category not found" });
+//         }
 
-    // console.log('name', name);
+//         // If an image file is uploaded, update it
+//         if (req.file) {
+
+//             try {
+//                 // Delete old image from Cloudinary
+//                 if (category.imageUrl) {
+//                     console.log('category.imageUrl', category.imageUrl)
+//                     const oldImagePublicId = category.imageUrl.split("/").pop().split(".")[0];
+//                     await cloudinary.uploader.destroy(`category/${oldImagePublicId}`);
+//                 }
+
+//                 // Upload new image
+//                 const result = await cloudinary.uploader.upload(req.file.path, {
+//                     folder: "category",
+//                 });
+//                 category.imageUrl = result.secure_url
+
+//                 // Remove temp file
+//                 await fs.promises.unlink(req.file.path);
+//             } catch (error) {
+//                 return res.status(500).json({ message: "Error uploading image", error: error.message });
+//             }
+//         }
+
+//         // Update category name if provided
+//         if (name) {
+//             category.name = name.trim();
+//         }
+
+//         await category.save();
+//         res.status(200).json({ message: "Category updated successfully !", category });
+//     } catch (error) {
+//         res.status(500).json({ message: "Error updating category", error: error.message });
+//     }
+// };
+
+
+
+module.exports.updateCategory = async (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
 
     try {
-        // Find the category by its ID
         const category = await Category.findById(id);
         if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
+            return res.status(404).json({ message: "Category not found" });
         }
 
-        // If the image has been updated, delete the old image from Cloudinary
-        if (imageUrl !== category.imageUrl && category.imageUrl) {
-            const oldImageUrl = category.imageUrl;
+        // If a new image is uploaded
+        if (req.file) {
+            try {
+                // Extract public ID from Cloudinary URL
+                if (category.imageUrl) {
+                    const oldImagePublicId = category.imageUrl.split('/').slice(-1)[0].split('.')[0];
+                    await cloudinary.uploader.destroy(`category/${oldImagePublicId}`);
+                }
 
-            // Extract the public_id of the old image from its URL
-            const oldImagePublicId = oldImageUrl
-                .split('/')
-                .pop()
-                .split('.')[0];
-            await cloudinary.uploader.destroy(`category/${oldImagePublicId}`);
-            // console.log('oldImagePublicId', oldImagePublicId)
+                // Upload new image
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: "category",
+                });
 
+
+                category.imageUrl = result.secure_url;
+                await fs.unlink(req.file.path);
+            } catch (error) {
+                return res.status(500).json({ message: "Error uploading image", error: error.message });
+            }
         }
 
-        // Update the category with the new name and image URL
-        const updatedCategory = await Category.findByIdAndUpdate(
-            id,
-            { name, imageUrl },
-            { new: true } // Return the updated document
-        );
-        // console.log('Updated category:', updatedCategory);
-
-        if (!updatedCategory) {
-            return res.status(400).json({ message: 'Category update failed !' });
+        // Update category name if provided
+        if (name) {
+            category.name = name.trim();
         }
 
-        res.status(200).json({
-            message: 'Category updated successfully !',
-            category: updatedCategory,
-        });
+        await category.save();
+        res.status(200).json({ message: "Category updated successfully", category });
     } catch (error) {
-        console.error('Error updating category:', error);
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({ message: "Error updating category", error: error.message });
     }
 };
 
