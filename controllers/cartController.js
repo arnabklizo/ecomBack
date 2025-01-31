@@ -40,7 +40,6 @@ module.exports.addToCart = async (req, res) => {
 // Remove item from cart
 module.exports.removeFromCart = async (req, res) => {
     const { userId, productId } = req.body;
-
     try {
         const cart = await Cart.findOne({ userId });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
@@ -74,7 +73,6 @@ module.exports.getCart = async (req, res) => {
 // Update item quantity
 module.exports.updateCart = async (req, res) => {
     const { userId, productId, quantity } = req.body;
-
     try {
         const cart = await Cart.findOne({ userId });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
