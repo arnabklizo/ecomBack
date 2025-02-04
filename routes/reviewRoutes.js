@@ -20,9 +20,9 @@ router.get("/:productId", getReviewsByProduct);
 router.get("/user/:userId", getReviewsByUser);
 
 // Update a review by ID
-router.put("/:id", updateReview);
+router.put("/:id", protect, updateReview);
 
 // Delete a review by ID
-router.delete("/:id", deleteReview);
+router.delete("/:id", protect, deleteReview);
 
 module.exports = router;

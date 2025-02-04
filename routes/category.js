@@ -21,6 +21,6 @@ router.get('/:id', getCategoryById);
 router.delete('/:id', protectAdmin, delCategoryById);
 
 // update a single category by ID
-router.put('/:id', upload.single("image"), updateCategory)
+router.put('/:id', protectAdmin, upload.single("image"), updateCategory)
 
 module.exports = router;

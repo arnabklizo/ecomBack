@@ -4,18 +4,18 @@ const cartController = require("../controllers/cartController");
 const protect = require('../middlewares/authMiddleware');
 
 // add to cart 
-router.post("/add", cartController.addToCart);
+router.post("/add", protect, cartController.addToCart);
 
 //remove from cart
-router.post("/remove", cartController.removeFromCart);
+router.post("/remove", protect, cartController.removeFromCart);
 
 //get cart details
-router.get("/:userId", cartController.getCart);
+router.get("/:userId", protect, cartController.getCart);
 
 //update cart details 
-router.put("/update", cartController.updateCart);
+router.put("/update", protect, cartController.updateCart);
 
 // clear cart
-router.post("/clear", cartController.clearCart);
+router.post("/clear", protect, cartController.clearCart);
 
 module.exports = router;
